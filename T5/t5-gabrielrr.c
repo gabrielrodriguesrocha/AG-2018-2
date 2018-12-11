@@ -52,7 +52,7 @@ int pop_heap (heap_t *h);
 
 void find_greenhouses(int, int);
 
-void dijkstra(int, int);
+void dijkstra(int);
 
 int longest_time(adj_list *, int);
 
@@ -63,33 +63,37 @@ void main() {
     init_graph(n, m);
     find_greenhouses(n, k);
     for (i = k; i < n; i++) {
-        printf("%d", (graph + i)->greenhouse);
-        if (i != n - 1)
-            printf(" ");
+        printf("%d ", (graph + i)->greenhouse);
     }
-    printf("\n");
+	printf("\n");
     free_graph(n, 1);
 }
 
 void find_greenhouses(int n, int k) {
     int i, j;
-    for (i = 0; i < k; i++) {
-        dijkstra(n, i);
-        for (j = k; j < n; j++) {
-            if ((graph + j)->dist < (graph + j)->greenhouse_dist || (graph + j)->greenhouse_dist == -1) {
-                (graph + j)->greenhouse_dist = (graph + j)->dist;
-                (graph + j)->greenhouse = i;
-            }
-        }
-        clear_search(n);
-    }
+//    for (i = 0; i < k; i++) {
+//        dijkstra(n, i);
+//        for (j = k; j < n; j++) {
+//            if ((graph + j)->dist < (graph + j)->greenhouse_dist || (graph + j)->greenhouse_dist == -1) {
+//                (graph + j)->greenhouse_dist = (graph + j)->dist;
+//                (graph + j)->greenhouse = i;
+//            }
+//        }
+//        clear_search(n);
+//    }
+	dijkstra(k);
 }
 
-void dijkstra(int n, int root) {
+void dijkstra(int k) {
     entry *current_vertex;
     int neighbours, q, i, tmp, not_visited;
 
-    push_heap(&heap, 0, root);
+	for (i = 0; i < k; i++) {
+		(graph + i)->dist = 0;
+		(graph + i)->greenhouse = i;
+	    push_heap(&heap, 0, i);
+	}
+
 
     while(heap.len) {
         q = pop_heap(&heap);
@@ -102,6 +106,7 @@ void dijkstra(int n, int root) {
             if((graph + current_vertex->v)->dist > tmp || (graph + current_vertex->v)->dist == -1) {
                 (graph + current_vertex->v)->dist = tmp;
                 (graph + current_vertex->v)->prev = q;
+				(graph + current_vertex->v)->greenhouse = (graph + q)->greenhouse;
             }
             if (not_visited)
                 push_heap(&heap, (graph + current_vertex->v)->dist, current_vertex->v);
