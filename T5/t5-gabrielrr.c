@@ -52,48 +52,37 @@ int pop_heap (heap_t *h);
 
 void find_greenhouses(int, int);
 
-void dijkstra(int);
+void dijkstra(int, int);
 
 int longest_time(adj_list *, int);
 
 void main() {
     int n,m,k,i;
-    int is_init = 0;
     scanf("%d %d %d", &n, &m, &k);
     init_graph(n, m);
     find_greenhouses(n, k);
     for (i = k; i < n; i++) {
-        printf("%d ", (graph + i)->greenhouse);
+        printf("%d", (graph + i)->greenhouse);
+        if (i != n - 1)
+            printf(" ");
     }
-	printf("\n");
+    printf("\n");
     free_graph(n, 1);
 }
 
 void find_greenhouses(int n, int k) {
-    int i, j;
-//    for (i = 0; i < k; i++) {
-//        dijkstra(n, i);
-//        for (j = k; j < n; j++) {
-//            if ((graph + j)->dist < (graph + j)->greenhouse_dist || (graph + j)->greenhouse_dist == -1) {
-//                (graph + j)->greenhouse_dist = (graph + j)->dist;
-//                (graph + j)->greenhouse = i;
-//            }
-//        }
-//        clear_search(n);
-//    }
-	dijkstra(k);
+    dijkstra(n, k);
 }
 
-void dijkstra(int k) {
+void dijkstra(int n, int k) {
     entry *current_vertex;
     int neighbours, q, i, tmp, not_visited;
 
-	for (i = 0; i < k; i++) {
-		(graph + i)->dist = 0;
-		(graph + i)->greenhouse = i;
-	    push_heap(&heap, 0, i);
-	}
-
+    for (i = 0; i < k; i++) {
+        push_heap(&heap, 0, i);
+        (graph + i)->dist = 0;
+        (graph + i)->greenhouse = i;
+    }
 
     while(heap.len) {
         q = pop_heap(&heap);
@@ -103,13 +92,15 @@ void dijkstra(int k) {
         for (i = 0; i < neighbours; i++) {
             tmp = (graph + q)->dist + current_vertex->dist;
             not_visited = (graph + current_vertex->v)->dist == -1 ? 1 : 0;
-            if((graph + current_vertex->v)->dist > tmp || (graph + current_vertex->v)->dist == -1) {
+            if((graph + current_vertex->v)->dist > tmp || not_visited) {
                 (graph + current_vertex->v)->dist = tmp;
                 (graph + current_vertex->v)->prev = q;
-				(graph + current_vertex->v)->greenhouse = (graph + q)->greenhouse;
-            }
-            if (not_visited)
+                (graph + current_vertex->v)->greenhouse = (graph + q)->greenhouse;
                 push_heap(&heap, (graph + current_vertex->v)->dist, current_vertex->v);
+            }
+            else if ((graph + current_vertex->v)->dist == tmp && (graph + q)->greenhouse < (graph + current_vertex->v)->greenhouse) {
+                (graph + current_vertex->v)->greenhouse = (graph + q)->greenhouse;
+            }
             current_vertex = current_vertex->next;
         }
     }
@@ -125,7 +116,7 @@ void push_vertex(adj_list *head, int v, int dist) {
 }
 
 void init_graph(int n, int m) {
-    int i,u,v,dist,p;
+    int i,u,v,dist;
 
     graph = malloc(sizeof(adj_list) * n);
     heap.nodes = malloc(n * sizeof(node_t));
